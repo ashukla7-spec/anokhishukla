@@ -127,6 +127,88 @@
     .animate-hero {
       animation: floatFadeIn 1.1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
     }
+
+    .image-preview-trigger {
+      appearance: none;
+      padding: 0;
+      color: inherit;
+      text-align: inherit;
+      cursor: zoom-in;
+    }
+
+    .image-preview-trigger:focus-visible,
+    #closeImagePreview:focus-visible {
+      outline: 3px solid #a7f3d0;
+      outline-offset: 4px;
+    }
+
+    #imagePreviewDialog {
+      position: fixed;
+      inset: 0;
+      width: min(56rem, calc(100vw - 2rem));
+      max-width: none;
+      max-height: calc(100vh - 2rem);
+      max-height: calc(100dvh - 2rem);
+      margin: auto;
+      padding: 3.75rem 1rem 1rem;
+      overflow: auto;
+      border: 1px solid rgba(255, 255, 255, 0.24);
+      border-radius: 1.5rem;
+      background: #143a34;
+      color: #fff;
+      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.55);
+    }
+
+    #imagePreviewDialog::backdrop {
+      background: rgba(3, 17, 14, 0.86);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+
+    #closeImagePreview {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 2.75rem;
+      height: 2.75rem;
+      border: 1px solid rgba(255, 255, 255, 0.24);
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.12);
+      color: #fff;
+      font-size: 1.75rem;
+      line-height: 1;
+      cursor: pointer;
+    }
+
+    #closeImagePreview:hover {
+      background: rgba(255, 255, 255, 0.24);
+    }
+
+    .image-preview-content {
+      margin: 0;
+    }
+
+    #imagePreviewImage {
+      display: block;
+      width: 100%;
+      height: auto;
+      max-height: calc(100vh - 11rem);
+      max-height: calc(100dvh - 11rem);
+      object-fit: contain;
+      border-radius: 0.75rem;
+      background: #f8faf6;
+    }
+
+    #imagePreviewCaption {
+      margin: 0.875rem 0 0;
+      text-align: center;
+      font-size: 0.875rem;
+      line-height: 1.5;
+      overflow-wrap: anywhere;
+    }
   </style>
 </head>
 <body class="text-white antialiased">
@@ -208,6 +290,18 @@
       <div id="modalBody" class="modal-scroll overflow-y-auto pr-1 space-y-4 text-sm text-white/85 leading-relaxed"></div>
     </div>
   </div>
+
+
+  <!-- Public image viewer -->
+  <dialog id="imagePreviewDialog" aria-label="Image preview" aria-describedby="imagePreviewCaption">
+    <button id="closeImagePreview" type="button" aria-label="Close image preview" autofocus>
+      <span aria-hidden="true">×</span>
+    </button>
+    <figure class="image-preview-content">
+      <img id="imagePreviewImage" alt="" />
+      <figcaption id="imagePreviewCaption"></figcaption>
+    </figure>
+  </dialog>
 
   <!-- Subtle Notification Toast -->
   <div id="toastBanner" class="fixed top-5 left-1/2 -translate-x-1/2 z-40 pointer-events-none opacity-0 transition-all duration-300 transform -translate-y-2">
@@ -1083,19 +1177,11 @@
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-12 gap-3.5 items-stretch">
-            <label id="aboutPhotoFrame" for="aboutPhotoUpload"
+            <button type="button" data-image-preview aria-label="View larger image: Anokhi" id="aboutPhotoFrame"
               style="height: 245px;"
-              class="sm:col-span-5 group relative flex flex-col items-center justify-center w-full rounded-2xl bg-white/[0.06] border border-dashed border-white/25 hover:border-emerald-200/55 hover:bg-white/[0.09] transition overflow-hidden cursor-pointer">
-              <img id="aboutPhotoImg" src="${IMAGE_URLS.aboutPhoto}" alt="Anokhi" class="hidden absolute inset-0 w-full h-full object-cover object-top" />
-              <div id="aboutPhotoPlaceholder" class="flex flex-col items-center text-center px-4 py-6">
-                <div class="w-10 h-10 rounded-full bg-white/10 border border-white/15 flex items-center justify-center text-base mb-2.5 group-hover:scale-105 transition">
-                  📷
-                </div>
-                <p class="text-xs font-medium text-white/90">add your photo</p>
-                <p class="text-[11px] text-white/55 mt-1 leading-snug">click to preview an image here</p>
-              </div>
-              <input id="aboutPhotoUpload" type="file" accept="image/*" class="hidden" />
-            </label>
+              class="image-preview-trigger sm:col-span-5 group relative flex flex-col items-center justify-center w-full rounded-2xl bg-white/[0.06] border border-white/20 hover:border-emerald-200/55 hover:bg-white/[0.09] transition overflow-hidden cursor-zoom-in">
+                <img id="aboutPhotoImg" src="${IMAGE_URLS.aboutPhoto}" alt="Anokhi" class="absolute inset-0 w-full h-full object-cover object-top" />
+              </button>
 
             <div class="sm:col-span-7 flex flex-col justify-between gap-2.5">
               <div class="flex-1 px-5 py-4 rounded-2xl bg-white/[0.07] border border-white/15 hover:border-emerald-200/35 transition flex items-center justify-between">
@@ -1161,20 +1247,15 @@
         title: 'projects',
         html: `
           <p class="text-xs sm:text-[13px] text-white/75 leading-relaxed">
-            Strategic campaigns, brand expansions, and case competition decks. Click any project to view the full presentation or preview your experience photos.
+            Strategic campaigns, brand expansions, and case competition decks. Click any project to view the full presentation or enlarge photos and logos.
           </p>
 
           <div class="space-y-3.5">
             <div class="p-4 sm:p-5 rounded-2xl bg-white/[0.07] border border-white/15 hover:border-white/30 transition flex flex-col sm:flex-row gap-4 items-stretch">
-              <label for="projPhoto1"
-                class="group relative sm:w-44 aspect-video sm:aspect-[16/10] shrink-0 rounded-xl bg-black/25 border border-dashed border-white/25 hover:border-emerald-200/60 transition overflow-hidden flex items-center justify-center cursor-pointer">
-                <img id="projPhotoImg1" src="${IMAGE_URLS.spotifyProject}" alt="Marketing Accelerator Program: Expansion Campaign" class="hidden absolute inset-0 w-full h-full object-cover" />
-                <div id="projPhotoPlaceholder1" class="flex flex-col items-center text-center p-2">
-                  <span class="text-sm mb-1">🖼️</span>
-                  <span class="text-[10px] text-white/75 font-medium">add photo</span>
-                </div>
-                <input id="projPhoto1" type="file" accept="image/*" class="hidden" />
-              </label>
+              <button type="button" data-image-preview aria-label="View larger image: Marketing Accelerator Program: Expansion Campaign"
+                class="image-preview-trigger group relative sm:w-44 aspect-video sm:aspect-[16/10] shrink-0 rounded-xl bg-black/25 border border-white/20 hover:border-emerald-200/60 transition overflow-hidden flex items-center justify-center cursor-zoom-in">
+                <img id="projPhotoImg1" src="${IMAGE_URLS.spotifyProject}" alt="Marketing Accelerator Program: Expansion Campaign" class="absolute inset-0 w-full h-full object-cover" />
+              </button>
 
               <div class="flex-1 flex flex-col justify-between gap-3">
                 <div>
@@ -1203,15 +1284,10 @@
             </div>
 
             <div class="p-4 sm:p-5 rounded-2xl bg-white/[0.07] border border-white/15 hover:border-white/30 transition flex flex-col sm:flex-row gap-4 items-stretch">
-              <label for="projPhoto2"
-                class="group relative sm:w-44 aspect-video sm:aspect-[16/10] shrink-0 rounded-xl bg-black/25 border border-dashed border-white/25 hover:border-amber-200/60 transition overflow-hidden flex items-center justify-center cursor-pointer">
-                <img id="projPhotoImg2" src="${IMAGE_URLS.bumaHorizon}" alt="BUMA x Horizon Media Case Competition" class="hidden absolute inset-0 w-full h-full object-cover" />
-                <div id="projPhotoPlaceholder2" class="flex flex-col items-center text-center p-2">
-                  <span class="text-sm mb-1">🖼️</span>
-                  <span class="text-[10px] text-white/75 font-medium">add photo</span>
-                </div>
-                <input id="projPhoto2" type="file" accept="image/*" class="hidden" />
-              </label>
+              <button type="button" data-image-preview aria-label="View larger image: BUMA x Horizon Media Case Competition"
+                class="image-preview-trigger group relative sm:w-44 aspect-video sm:aspect-[16/10] shrink-0 rounded-xl bg-black/25 border border-white/20 hover:border-amber-200/60 transition overflow-hidden flex items-center justify-center cursor-zoom-in">
+                <img id="projPhotoImg2" src="${IMAGE_URLS.bumaHorizon}" alt="BUMA x Horizon Media Case Competition" class="absolute inset-0 w-full h-full object-cover" />
+              </button>
 
               <div class="flex-1 flex flex-col justify-between gap-3">
                 <div>
@@ -1240,15 +1316,10 @@
             </div>
 
             <div class="p-4 sm:p-5 rounded-2xl bg-white/[0.07] border border-white/15 hover:border-white/30 transition flex flex-col sm:flex-row gap-4 items-stretch">
-              <label for="projPhoto3"
-                class="group relative sm:w-44 aspect-video sm:aspect-[16/10] shrink-0 rounded-xl bg-black/25 border border-dashed border-white/25 hover:border-pink-200/60 transition overflow-hidden flex items-center justify-center cursor-pointer">
-                <img id="projPhotoImg3" src="${IMAGE_URLS.eyTechx}" alt="EY TechX Case Competition" class="hidden absolute inset-0 w-full h-full object-cover" />
-                <div id="projPhotoPlaceholder3" class="flex flex-col items-center text-center p-2">
-                  <span class="text-sm mb-1">🖼️</span>
-                  <span class="text-[10px] text-white/75 font-medium">add photo</span>
-                </div>
-                <input id="projPhoto3" type="file" accept="image/*" class="hidden" />
-              </label>
+              <button type="button" data-image-preview aria-label="View larger image: EY TechX Case Competition"
+                class="image-preview-trigger group relative sm:w-44 aspect-video sm:aspect-[16/10] shrink-0 rounded-xl bg-black/25 border border-white/20 hover:border-pink-200/60 transition overflow-hidden flex items-center justify-center cursor-zoom-in">
+                <img id="projPhotoImg3" src="${IMAGE_URLS.eyTechx}" alt="EY TechX Case Competition" class="absolute inset-0 w-full h-full object-cover" />
+              </button>
 
               <div class="flex-1 flex flex-col justify-between gap-3">
                 <div>
@@ -1285,14 +1356,10 @@
           <div class="space-y-4">
             <div class="p-4 sm:p-5 rounded-2xl bg-white/[0.07] border border-white/15 hover:border-white/30 transition space-y-3.5">
               <div class="flex items-start gap-3.5">
-                <label for="workLogo1" id="workLogoFrame1"
-                  class="group relative w-12 h-12 sm:w-14 sm:h-14 shrink-0 rounded-2xl bg-white/[0.08] border border-dashed border-white/25 hover:border-emerald-200/60 transition overflow-hidden flex items-center justify-center cursor-pointer">
-                  <img id="workLogoImg1" src="${IMAGE_URLS.belleLogo}" alt="Belle The Agency logo" class="hidden absolute inset-0 w-full h-full object-cover rounded-2xl" />
-                  <div id="workLogoPlaceholder1" class="flex flex-col items-center text-center">
-                    <span class="text-[10px] text-white/70 font-medium leading-tight">+ logo</span>
-                  </div>
-                  <input id="workLogo1" type="file" accept="image/*" class="hidden" />
-                </label>
+                <button type="button" data-image-preview aria-label="View larger image: Belle The Agency logo" id="workLogoFrame1"
+                  class="image-preview-trigger group relative w-12 h-12 sm:w-14 sm:h-14 shrink-0 rounded-2xl bg-white/[0.08] border border-white/20 hover:border-emerald-200/60 transition overflow-hidden flex items-center justify-center cursor-zoom-in">
+                <img id="workLogoImg1" src="${IMAGE_URLS.belleLogo}" alt="Belle The Agency logo" class="absolute inset-0 w-full h-full object-cover rounded-2xl" />
+              </button>
 
                 <div class="flex-1 min-w-0">
                   <div class="flex flex-wrap items-start justify-between gap-2">
@@ -1325,14 +1392,10 @@
 
             <div class="p-4 sm:p-5 rounded-2xl bg-white/[0.07] border border-white/15 hover:border-white/30 transition space-y-3.5">
               <div class="flex items-start gap-3.5">
-                <label for="workLogo2" id="workLogoFrame2"
-                  class="group relative w-12 h-12 sm:w-14 sm:h-14 shrink-0 rounded-2xl bg-white/[0.08] border border-dashed border-white/25 hover:border-amber-200/60 transition overflow-hidden flex items-center justify-center cursor-pointer">
-                  <img id="workLogoImg2" src="${IMAGE_URLS.museumLogo}" alt="Binghamton University Art Museum logo" class="hidden absolute inset-0 w-full h-full object-cover rounded-2xl" />
-                  <div id="workLogoPlaceholder2" class="flex flex-col items-center text-center">
-                    <span class="text-[10px] text-white/70 font-medium leading-tight">+ logo</span>
-                  </div>
-                  <input id="workLogo2" type="file" accept="image/*" class="hidden" />
-                </label>
+                <button type="button" data-image-preview aria-label="View larger image: Binghamton University Art Museum logo" id="workLogoFrame2"
+                  class="image-preview-trigger group relative w-12 h-12 sm:w-14 sm:h-14 shrink-0 rounded-2xl bg-white/[0.08] border border-white/20 hover:border-amber-200/60 transition overflow-hidden flex items-center justify-center cursor-zoom-in">
+                <img id="workLogoImg2" src="${IMAGE_URLS.museumLogo}" alt="Binghamton University Art Museum logo" class="absolute inset-0 w-full h-full object-cover rounded-2xl" />
+              </button>
 
                 <div class="flex-1 min-w-0">
                   <div class="flex flex-wrap items-start justify-between gap-2">
@@ -1372,14 +1435,10 @@
           <div class="space-y-3.5">
             <div class="p-4 sm:p-5 rounded-2xl bg-white/[0.07] border border-white/15 hover:border-white/30 transition space-y-3">
               <div class="flex items-start gap-3.5">
-                <label for="leadLogo1"
-                  class="group relative w-12 h-12 sm:w-14 sm:h-14 shrink-0 rounded-2xl bg-white/[0.08] border border-dashed border-white/25 hover:border-emerald-200/60 transition overflow-hidden flex items-center justify-center cursor-pointer">
-                  <img id="leadLogoImg1" src="${IMAGE_URLS.bumaLogo}" alt="Binghamton University Marketing Association logo" class="hidden absolute inset-0 w-full h-full object-cover rounded-2xl" />
-                  <div id="leadLogoPlaceholder1" class="flex flex-col items-center text-center">
-                    <span class="text-[10px] text-white/70 font-medium leading-tight">+ logo</span>
-                  </div>
-                  <input id="leadLogo1" type="file" accept="image/*" class="hidden" />
-                </label>
+                <button type="button" data-image-preview aria-label="View larger image: Binghamton University Marketing Association logo"
+                  class="image-preview-trigger group relative w-12 h-12 sm:w-14 sm:h-14 shrink-0 rounded-2xl bg-white/[0.08] border border-white/20 hover:border-emerald-200/60 transition overflow-hidden flex items-center justify-center cursor-zoom-in">
+                <img id="leadLogoImg1" src="${IMAGE_URLS.bumaLogo}" alt="Binghamton University Marketing Association logo" class="absolute inset-0 w-full h-full object-cover rounded-2xl" />
+              </button>
 
                 <div class="flex-1 min-w-0">
                   <div class="flex flex-wrap items-start justify-between gap-2">
@@ -1404,14 +1463,10 @@
 
             <div class="p-4 sm:p-5 rounded-2xl bg-white/[0.07] border border-white/15 hover:border-white/30 transition space-y-3">
               <div class="flex items-start gap-3.5">
-                <label for="leadLogo2"
-                  class="group relative w-12 h-12 sm:w-14 sm:h-14 shrink-0 rounded-2xl bg-white/[0.08] border border-dashed border-white/25 hover:border-amber-200/60 transition overflow-hidden flex items-center justify-center cursor-pointer">
-                  <img id="leadLogoImg2" src="${IMAGE_URLS.mapLogo}" alt="Marketing Accelerator Program logo" class="hidden absolute inset-0 w-full h-full object-cover rounded-2xl" />
-                  <div id="leadLogoPlaceholder2" class="flex flex-col items-center text-center">
-                    <span class="text-[10px] text-white/70 font-medium leading-tight">+ logo</span>
-                  </div>
-                  <input id="leadLogo2" type="file" accept="image/*" class="hidden" />
-                </label>
+                <button type="button" data-image-preview aria-label="View larger image: Marketing Accelerator Program logo"
+                  class="image-preview-trigger group relative w-12 h-12 sm:w-14 sm:h-14 shrink-0 rounded-2xl bg-white/[0.08] border border-white/20 hover:border-amber-200/60 transition overflow-hidden flex items-center justify-center cursor-zoom-in">
+                <img id="leadLogoImg2" src="${IMAGE_URLS.mapLogo}" alt="Marketing Accelerator Program logo" class="absolute inset-0 w-full h-full object-cover rounded-2xl" />
+              </button>
 
                 <div class="flex-1 min-w-0">
                   <div class="flex flex-wrap items-start justify-between gap-2">
@@ -1436,14 +1491,10 @@
 
             <div class="p-4 sm:p-5 rounded-2xl bg-white/[0.07] border border-white/15 hover:border-white/30 transition space-y-3">
               <div class="flex items-start gap-3.5">
-                <label for="leadLogo3"
-                  class="group relative w-12 h-12 sm:w-14 sm:h-14 shrink-0 rounded-2xl bg-white/[0.08] border border-dashed border-white/25 hover:border-pink-200/60 transition overflow-hidden flex items-center justify-center cursor-pointer">
-                  <img id="leadLogoImg3" src="${IMAGE_URLS.bhangraLogo}" alt="Binghamton Bhangra logo" class="hidden absolute inset-0 w-full h-full object-cover rounded-2xl" />
-                  <div id="leadLogoPlaceholder3" class="flex flex-col items-center text-center">
-                    <span class="text-[10px] text-white/70 font-medium leading-tight">+ logo</span>
-                  </div>
-                  <input id="leadLogo3" type="file" accept="image/*" class="hidden" />
-                </label>
+                <button type="button" data-image-preview aria-label="View larger image: Binghamton Bhangra logo"
+                  class="image-preview-trigger group relative w-12 h-12 sm:w-14 sm:h-14 shrink-0 rounded-2xl bg-white/[0.08] border border-white/20 hover:border-pink-200/60 transition overflow-hidden flex items-center justify-center cursor-zoom-in">
+                <img id="leadLogoImg3" src="${IMAGE_URLS.bhangraLogo}" alt="Binghamton Bhangra logo" class="absolute inset-0 w-full h-full object-cover rounded-2xl" />
+              </button>
 
                 <div class="flex-1 min-w-0">
                   <div class="flex flex-wrap items-start justify-between gap-2">
@@ -1465,14 +1516,10 @@
 
             <div class="p-4 sm:p-5 rounded-2xl bg-white/[0.07] border border-white/15 hover:border-white/30 transition space-y-3">
               <div class="flex items-start gap-3.5">
-                <label for="leadLogo4"
-                  class="group relative w-12 h-12 sm:w-14 sm:h-14 shrink-0 rounded-2xl bg-white/[0.08] border border-dashed border-white/25 hover:border-emerald-200/60 transition overflow-hidden flex items-center justify-center cursor-pointer">
-                  <img id="leadLogoImg4" src="${IMAGE_URLS.hscLogo}" alt="Hindu Student Council logo" class="hidden absolute inset-0 w-full h-full object-cover rounded-2xl" />
-                  <div id="leadLogoPlaceholder4" class="flex flex-col items-center text-center">
-                    <span class="text-[10px] text-white/70 font-medium leading-tight">+ logo</span>
-                  </div>
-                  <input id="leadLogo4" type="file" accept="image/*" class="hidden" />
-                </label>
+                <button type="button" data-image-preview aria-label="View larger image: Hindu Student Council logo"
+                  class="image-preview-trigger group relative w-12 h-12 sm:w-14 sm:h-14 shrink-0 rounded-2xl bg-white/[0.08] border border-white/20 hover:border-emerald-200/60 transition overflow-hidden flex items-center justify-center cursor-zoom-in">
+                <img id="leadLogoImg4" src="${IMAGE_URLS.hscLogo}" alt="Hindu Student Council logo" class="absolute inset-0 w-full h-full object-cover rounded-2xl" />
+              </button>
 
                 <div class="flex-1 min-w-0">
                   <div class="flex flex-wrap items-start justify-between gap-2">
@@ -1497,14 +1544,10 @@
 
             <div class="p-4 sm:p-5 rounded-2xl bg-white/[0.07] border border-white/15 hover:border-white/30 transition space-y-3">
               <div class="flex items-start gap-3.5">
-                <label for="leadLogo5"
-                  class="group relative w-12 h-12 sm:w-14 sm:h-14 shrink-0 rounded-2xl bg-white/[0.08] border border-dashed border-white/25 hover:border-amber-200/60 transition overflow-hidden flex items-center justify-center cursor-pointer">
-                  <img id="leadLogoImg5" src="${IMAGE_URLS.absaLogo}" alt="Asian Business Student Association logo" class="hidden absolute inset-0 w-full h-full object-cover rounded-2xl" />
-                  <div id="leadLogoPlaceholder5" class="flex flex-col items-center text-center">
-                    <span class="text-[10px] text-white/70 font-medium leading-tight">+ logo</span>
-                  </div>
-                  <input id="leadLogo5" type="file" accept="image/*" class="hidden" />
-                </label>
+                <button type="button" data-image-preview aria-label="View larger image: Asian Business Student Association logo"
+                  class="image-preview-trigger group relative w-12 h-12 sm:w-14 sm:h-14 shrink-0 rounded-2xl bg-white/[0.08] border border-white/20 hover:border-amber-200/60 transition overflow-hidden flex items-center justify-center cursor-zoom-in">
+                <img id="leadLogoImg5" src="${IMAGE_URLS.absaLogo}" alt="Asian Business Student Association logo" class="absolute inset-0 w-full h-full object-cover rounded-2xl" />
+              </button>
 
                 <div class="flex-1 min-w-0">
                   <div class="flex flex-wrap items-start justify-between gap-2">
@@ -1526,14 +1569,10 @@
 
             <div class="p-4 sm:p-5 rounded-2xl bg-white/[0.07] border border-white/15 hover:border-white/30 transition space-y-3">
               <div class="flex items-start gap-3.5">
-                <label for="leadLogo6"
-                  class="group relative w-12 h-12 sm:w-14 sm:h-14 shrink-0 rounded-2xl bg-white/[0.08] border border-dashed border-white/25 hover:border-pink-200/60 transition overflow-hidden flex items-center justify-center cursor-pointer">
-                  <img id="leadLogoImg6" src="${IMAGE_URLS.elpLogo}" alt="Emerging Leaders Program logo" class="hidden absolute inset-0 w-full h-full object-cover rounded-2xl" />
-                  <div id="leadLogoPlaceholder6" class="flex flex-col items-center text-center">
-                    <span class="text-[10px] text-white/70 font-medium leading-tight">+ logo</span>
-                  </div>
-                  <input id="leadLogo6" type="file" accept="image/*" class="hidden" />
-                </label>
+                <button type="button" data-image-preview aria-label="View larger image: Emerging Leaders Program logo"
+                  class="image-preview-trigger group relative w-12 h-12 sm:w-14 sm:h-14 shrink-0 rounded-2xl bg-white/[0.08] border border-white/20 hover:border-pink-200/60 transition overflow-hidden flex items-center justify-center cursor-zoom-in">
+                <img id="leadLogoImg6" src="${IMAGE_URLS.elpLogo}" alt="Emerging Leaders Program logo" class="absolute inset-0 w-full h-full object-cover rounded-2xl" />
+              </button>
 
                 <div class="flex-1 min-w-0">
                   <div class="flex flex-wrap items-start justify-between gap-2">
@@ -1557,55 +1596,42 @@
       }
     };
 
-    const uploadedImages = {};
+    const imagePreviewDialog = document.getElementById('imagePreviewDialog');
+    const imagePreviewImage = document.getElementById('imagePreviewImage');
+    const imagePreviewCaption = document.getElementById('imagePreviewCaption');
+    let imagePreviewTrigger = null;
 
-    function applyImageToModal(imgId, placeholderId, dataUrl) {
-      const imgEl = document.getElementById(imgId);
-      const placeholderEl = document.getElementById(placeholderId);
-      const fileInput = imgEl ? imgEl.parentElement.querySelector('input[type="file"]') : null;
-      if (!imgEl || !placeholderEl) return;
-
-      if (dataUrl) {
-        imgEl.src = dataUrl;
-      }
-      imgEl.classList.remove('hidden');
-      placeholderEl.classList.add('hidden');
-      const frameEl = fileInput ? fileInput.closest('label') : imgEl.closest('label');
-      if (frameEl) {
-        frameEl.classList.remove('border-dashed', 'border-white/25', 'bg-white/[0.08]');
-        frameEl.classList.add('border-solid', 'border-white/20', 'bg-transparent');
-      }
-    }
-
-    function bindImageUploader(inputId, imgId, placeholderId, successMsg) {
-      const fileInput = document.getElementById(inputId);
-      const imgEl = document.getElementById(imgId);
-      const placeholderEl = document.getElementById(placeholderId);
-      if (!fileInput || !imgEl || !placeholderEl) return;
-
-      if (uploadedImages[imgId]) {
-        applyImageToModal(imgId, placeholderId, uploadedImages[imgId]);
-      } else if (imgEl.getAttribute('src')) {
-        if (imgEl.complete && imgEl.naturalWidth > 0) {
-          applyImageToModal(imgId, placeholderId, null);
-        } else {
-          imgEl.addEventListener('load', () => applyImageToModal(imgId, placeholderId, null), { once: true });
-        }
-      }
-
-      fileInput.addEventListener('change', (e) => {
-        const file = e.target.files && e.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-          const dataUrl = ev.target.result;
-          uploadedImages[imgId] = dataUrl;
-          applyImageToModal(imgId, placeholderId, dataUrl);
-          showToast(successMsg);
-        };
-        reader.readAsDataURL(file);
+    function bindImagePreviews() {
+      modalBody.querySelectorAll('[data-image-preview]').forEach(button => {
+        const image = button.querySelector('img');
+        button.addEventListener('click', () => {
+          if (!image || !image.complete || image.naturalWidth === 0) return;
+          imagePreviewTrigger = button;
+          imagePreviewImage.src = image.currentSrc || image.src;
+          imagePreviewImage.alt = image.alt;
+          imagePreviewCaption.textContent = image.alt;
+          imagePreviewDialog.showModal();
+        });
       });
     }
+
+    document.getElementById('closeImagePreview').addEventListener('click', () => {
+      imagePreviewDialog.close();
+    });
+
+    imagePreviewDialog.addEventListener('click', event => {
+      if (event.target === imagePreviewDialog) imagePreviewDialog.close();
+    });
+
+    imagePreviewDialog.addEventListener('close', () => {
+      imagePreviewImage.removeAttribute('src');
+      imagePreviewImage.alt = '';
+      imagePreviewCaption.textContent = '';
+      if (imagePreviewTrigger && imagePreviewTrigger.isConnected) {
+        imagePreviewTrigger.focus({ preventScroll: true });
+      }
+      imagePreviewTrigger = null;
+    });
 
     function openModal(key) {
       const data = modalTemplates[key];
@@ -1631,26 +1657,7 @@
         modalCard.classList.add('scale-100', 'opacity-100');
       });
 
-      if (key === 'about') {
-        bindImageUploader('aboutPhotoUpload', 'aboutPhotoImg', 'aboutPhotoPlaceholder', 'Photo added to About Me!');
-      }
-      if (key === 'projects') {
-        bindImageUploader('projPhoto1', 'projPhotoImg1', 'projPhotoPlaceholder1', 'Photo added to Expansion Campaign!');
-        bindImageUploader('projPhoto2', 'projPhotoImg2', 'projPhotoPlaceholder2', 'Photo added to BUMA x Horizon Media!');
-        bindImageUploader('projPhoto3', 'projPhotoImg3', 'projPhotoPlaceholder3', 'Photo added to EY TechX!');
-      }
-      if (key === 'work') {
-        bindImageUploader('workLogo1', 'workLogoImg1', 'workLogoPlaceholder1', 'Logo added for Belle The Agency!');
-        bindImageUploader('workLogo2', 'workLogoImg2', 'workLogoPlaceholder2', 'Logo added for Binghamton University Art Museum!');
-      }
-      if (key === 'leadership') {
-        bindImageUploader('leadLogo1', 'leadLogoImg1', 'leadLogoPlaceholder1', 'Logo added for BUMA!');
-        bindImageUploader('leadLogo2', 'leadLogoImg2', 'leadLogoPlaceholder2', 'Logo added for Marketing Accelerator Program!');
-        bindImageUploader('leadLogo3', 'leadLogoImg3', 'leadLogoPlaceholder3', 'Logo added for Binghamton Bhangra!');
-        bindImageUploader('leadLogo4', 'leadLogoImg4', 'leadLogoPlaceholder4', 'Logo added for Hindu Student Council!');
-        bindImageUploader('leadLogo5', 'leadLogoImg5', 'leadLogoPlaceholder5', 'Logo added for Asian Business Student Association!');
-        bindImageUploader('leadLogo6', 'leadLogoImg6', 'leadLogoPlaceholder6', 'Logo added for Emerging Leaders Program!');
-      }
+      bindImagePreviews();
     }
 
     function closeModal() {
@@ -1673,7 +1680,7 @@
       if (e.target === modalBackdrop) closeModal();
     });
     window.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') closeModal();
+      if (e.key === 'Escape' && !imagePreviewDialog.open) closeModal();
     });
 
     document.getElementById('feedFishBtn').addEventListener('click', () => {
